@@ -1,156 +1,148 @@
-#include <cstdio>
-#include <vector>
-#include <iostream>
-#include <array>
+#include "board.h"
+//#include"var.h"
 
-using namespace std;
+//using namespace std;
 
-#define pb push_back
-#define NTYPE 9
-//4*4 is max
-#define MAXN 4
-#define N 4
-
-typedef array<array<int,N>, N> BLOCKGRID; // of size N, care
-
-ostream& operator<<(ostream& os, const BLOCKGRID& rhs)
+ostream& operator<<(ostream& os, const Board& rhs)
 {
-  for(int i = 0; i < N; ++i, cout<<endl)for(int j = 0; j < N; ++j)
-  cout << rhs[i][j];
+  for(int i = 0; i < BOARDN; ++i, cout<<endl)for(int j = 0; j < BOARDN; ++j)
+  {
+    if(rhs.b[i][j] == -1) cout << ". ";
+    if(rhs.b[i][j] == 0) cout << "o ";
+    if(rhs.b[i][j] == 1) cout << "x ";
+  }
   return os;
 }
 
-class POS
+ostream& operator<<(ostream& os, const Pos& rhs)
 {
-public:
-  int x,y;
-  POS(int _x, int _y) : x(_x), y(_y){}
-  POS operator+(const POS&rhs)
-  {
-    return POS(x+rhs.x, y+rhs.y);
-  }
-};
-
-void rotate90(BLOCKGRID& mat)
-{
-    for (int x = 0; x < N/2; x++)
-    {
-        for (int y = x; y < N-x-1; y++)
-        {
-            int temp = mat[x][y];
-            mat[x][y] = mat[y][N-1-x];
-            mat[y][N-1-x] = mat[N-1-x][N-1-y];
-            mat[N-1-x][N-1-y] = mat[N-1-y][x];
-            mat[N-1-y][x] = temp;
-        }
-    }
+  cout << "POS: " << rhs.x << ' ' <<  rhs.y << endl;
+  return os;
 }
 
-class BLOCK
+ostream& operator<<(ostream& os, const Action& rhs)
 {
-public:
-  //const int N = 4;
-  BLOCKGRID grid;
-  int id; //type id
-  int n;
-  vector<vector<vector<POS> > > prss; //rotate(4)*n*n-1;
+  cout << "Action: " << endl;
+  cout << "player: " << rhs.player << endl;
+  cout << "iso_id: " << rhs.iso_id << endl;
+  Pos pos = rhs.origin-blocks_locs[rhs.iso_id][rhs.origin_id];
+  cout << "origin: " <<  pos.x << " " << pos.y << endl;
+  return os;
+}
 
-  BLOCK(BLOCKGRID a)
+void Board::init()
+{
+  //init block cnt
+  block_n[0] = initial_cnt;
+  block_n[1] = initial_cnt;
+  //init board with -1(empty)
+  for(int i = 0; i < BOARDN; i++)
   {
-    for(int i = 0; i < N; ++i)for(int j = 0; j < N; ++j)
-      this->grid[i][j] = a[i][j];
-    for(int i = 0; i < 4; ++i)
+    memset(b[i], -1, sizeof(b[i]));
+    memset(contact_points[0][i], 0, sizeof(contact_points[0][i]));
+    memset(contact_points[1][i], 0, sizeof(contact_points[1][i]));
+  }
+  //init contact_points
+  for(const Pos& pos:initial_contact_points)
+    contact_points[0][pos.x][pos.y] = contact_points[1][pos.x][pos.y] = 1;
+  //init actions_taken
+  actions_taken.clear();
+  //iso2type => type2isos
+  for(int i = 0; i < N_BLOCKTYPE; ++i) type2isos[i].clear();
+  for(int i = 0; i < N_ISO; ++i) type2isos[iso2type[i]].push_back(i); //or written in .h file
+  //allpos init
+  for(int i = 0; i < BOARDVL; ++i) allpos[i] = Pos(i/BOARDN, i%BOARDN);
+}
+
+inline bool Board::inrange(const Pos& pos)
+{
+  return pos.x>=0 && pos.x<BOARDN && pos.y>=0 && pos.y<BOARDN;
+}
+
+//should use after check inrange
+inline bool Board::occupied(const Pos& pos)
+{
+  //if(inrange(pos)) return true;
+  return b[pos.x][pos.y] != -1;
+}
+
+
+bool Board::is_valid(const Action& action)
+{
+  if(block_n[action.player][iso2type[action.iso_id]] == 0) return false;
+  bool contact = false;
+  for(auto& dxy : blocks_locs[action.iso_id])
+  {
+    Pos loc = action.origin + dxy - blocks_locs[action.iso_id][action.origin_id];
+    if(!inrange(loc) || occupied(loc)) return false;
+    contact |= contact_points[action.player][loc.x][loc.y];
+  }
+  return contact;
+}
+
+Status Board::status()
+{
+  if(actions_taken.size() != 18) return NOTEND;
+  else return BLACKWIN;
+}
+
+Status Board::take_action(Action action)
+{
+  assert(is_valid(action));
+  for(auto& dxy : blocks_locs[action.iso_id])
+  {
+    Pos loc = action.origin + dxy - blocks_locs[action.iso_id][action.origin_id];
+    this->b[loc.x][loc.y] = action.player;
+  }
+  //action related value changes
+  block_n[action.player][iso2type[action.iso_id]]--;
+  this->actions_taken.push_back(action);
+  //contact_points changes
+  for(auto& dxy : blocks_locs[action.iso_id])
+  {
+    Pos loc = action.origin + dxy - blocks_locs[action.iso_id][action.origin_id];
+    for(const Pos &dxdyi : dxdy)
     {
-      vector<vector<POS> > pss;
-      rotate90(grid);
-      for(int pi = 0; pi < N; ++pi)for(int pj = 0; pj < N; ++pj)if(grid[pi][pj])
+      Pos mark_pos = loc+dxdyi;
+      this->contact_points[action.player][mark_pos.x][mark_pos.y] = 1;
+    }
+  }
+  return this->status();
+}
+
+vector<Action> Board::valid_actions(Color player)
+{
+  vector<Action> ret;
+  if(actions_taken.size() == 18) return ret;
+  for(Pos& origin: allpos)
+  {
+    if(occupied(origin) || !contact_points[player][origin.x][origin.y]) continue;
+    for(int type_id = 0; type_id < N_BLOCKTYPE; ++type_id)
+    {
+      if(block_n[player][type_id] == 0) continue;
+      for(int& iso_id : type2isos[type_id])
       {
-        vector<POS> ps;
-        for(int p2i = 0; p2i < N; ++p2i)for(int p2j = 0; p2j < N; ++p2j)if(grid[p2i][p2j])
+        for(int origin_id = 0; origin_id < 4; ++origin_id)
         {
-          ps.pb(POS(p2i-pi, p2j-pj));
+          //action connected that transform to noraml form(origin_id = 0);
+          Action tmp(player, iso_id, origin-blocks_locs[iso_id][origin_id], 0);
+          if(is_valid(tmp)) ret.push_back(tmp);
         }
-        pss.pb(ps);
       }
-      prss.pb(pss);
     }
   }
-};
+  return ret;
+}
 
-
-void init_block_data()
-{
-  vector<BLOCKGRID> grids;
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,0,0,0},
-  {1,1,1,1} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {1,1,1,0},
-  {0,0,1,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,1,1,1},
-  {0,1,0,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,1,1,0},
-  {0,1,1,0},
-  {0,0,0,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,1,1,0},
-  {1,1,0,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,1,0,0},
-  {1,1,1,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,0,0,0},
-  {0,1,1,0},
-  {0,0,1,1} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,1,0,0},
-  {0,0,0,0},
-  {0,0,0,0} }});
-  grids.push_back((BLOCKGRID){{
-  {0,0,0,0},
-  {0,1,0,0},
-  {0,0,0,0},
-  {0,0,0,0} }});
-
+//test main
 /*
-  for(auto grid : grids)
-  {
-    cout << grid << endl;
-  }
-*/
-
-  BLOCK b(grids[0]);
-  for(auto pss: b.prss)
-  {
-    cout << "rotate90" << endl;
-    for(auto ps: pss)
-    {
-      cout << "for a point" << endl;
-      for(auto p: ps)
-      {
-        cout << "point " << p.x << " " << p.y <<  " " << endl;
-      }
-    }
-  }
-};
-
-int main()
+signed main()
 {
-  init_block_data();
+  Board b;
+  b.init();
+  //cout << blocks_locs[0][0].x <<  ' ' << blocks_locs[0][0].y << endl;
+  cout << b;
+  cout << "test validity" << endl;
   return 0;
 }
+*/

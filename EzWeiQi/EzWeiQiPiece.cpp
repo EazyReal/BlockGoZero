@@ -2,6 +2,8 @@
 #include "EzWeiQiPiece.h"
 #include "math.h"
 
+//#define CPoint POINT
+
 EzWeiQiPiece::EzWeiQiPiece()
 {
 }
@@ -21,39 +23,52 @@ void EzWeiQiPiece::setLocations(CPoint originPoint, int iPieceSize)
 {
 	locations[0] = CPoint(originPoint.x, originPoint.y);
 	switch(iPieceType){
+		//|
 	case 0:
 		for(int k = 1; k<4; k++)
 			locations[k] = CPoint(originPoint.x, originPoint.y + iPieceSize*k);
 		break;
+		//_
 	case 1:
 		for(int k = 1; k<4; k++)
 			locations[k] = CPoint(originPoint.x + iPieceSize*k, originPoint.y);
 		break;
+	//___
+	// |
 	case 2:
 		locations[1] = CPoint(originPoint.x + iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x - iPieceSize*1, originPoint.y);
 		locations[3] = CPoint(originPoint.x, originPoint.y - iPieceSize*1);
 		break;
+	//|_
+	//|
 	case 3:
 		locations[1] = CPoint(originPoint.x + iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x, originPoint.y + iPieceSize*1);
 		locations[3] = CPoint(originPoint.x, originPoint.y - iPieceSize*1);
 		break;
+	// |
+	//___
 	case 4:
 		locations[1] = CPoint(originPoint.x + iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x + iPieceSize*-1, originPoint.y);
 		locations[3] = CPoint(originPoint.x, originPoint.y + iPieceSize*1);
 		break;
+	//_|
+	// |
 	case 5:
 		locations[1] = CPoint(originPoint.x - iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x, originPoint.y + iPieceSize*1);
 		locations[3] = CPoint(originPoint.x, originPoint.y - iPieceSize*1);
 		break;
+	//_
+	// |_
 	case 6:
 		locations[1] = CPoint(originPoint.x - iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x, originPoint.y - iPieceSize*1);
 		locations[3] = CPoint(originPoint.x + iPieceSize*1, originPoint.y - iPieceSize*1);
 		break;
+	//
 	case 7:
 		locations[1] = CPoint(originPoint.x - iPieceSize*1, originPoint.y);
 		locations[2] = CPoint(originPoint.x, originPoint.y + iPieceSize*1);
@@ -243,7 +258,7 @@ bool EzWeiQiPiece::isInSelectRegion(int x, int y)
 //////////////////////////////////////////////////////////////////////////
 // Conversiont functions
 int EzWeiQiPiece::getRoundValue(double value, int iPieceSize)
-{	
+{
 	return (int)(floor((value/iPieceSize)+0.5) * iPieceSize);
 }
 
