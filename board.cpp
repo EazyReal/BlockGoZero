@@ -104,7 +104,9 @@ Status Board::take_action(Action action)
     for(const Pos &dxdyi : dxdy)
     {
       Pos mark_pos = loc+dxdyi;
-      this->contact_points[action.player][mark_pos.x][mark_pos.y] = 1;
+      //debug contact, didnt test inrange of mark pos
+      if(inrange(mark_pos))
+        this->contact_points[action.player][mark_pos.x][mark_pos.y] = 1;
     }
   }
   return this->status();
@@ -132,6 +134,29 @@ vector<Action> Board::valid_actions(Color player)
     }
   }
   return ret;
+}
+
+
+Color Board::player_to_go()
+{
+  return actions_taken.size()%2;
+}
+
+//debug contact, didnt test inrange of mark pos
+void Board::print_contact()
+{
+  cout << "contact point matrix of player 0\n";
+  for(int i = 0 ;i < BOARDN; ++i, cout << endl)
+  for(int j = 0 ;j < BOARDN; ++j)
+  if(occupied({i,j})) cout << ((b[i][j] == 0)?"o ":". ");
+  else cout << contact_points[0][i][j] << ' ';
+
+  cout << "contact point matrix of player 1\n";
+  for(int i = 0 ;i < BOARDN; ++i, cout << endl)
+  for(int j = 0 ;j < BOARDN; ++j)
+  if(occupied({i,j})) cout << ((b[i][j] == 0)?"o ":". ");
+  else cout << contact_points[1][i][j] << ' ';
+  return;
 }
 
 //test main

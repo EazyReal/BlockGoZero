@@ -29,6 +29,7 @@ namespace __board_namespace__{
     {
       this->x = rhs.x;
       this->y = rhs.y;
+      return *this; //warning
     }
     friend ostream& operator<<(ostream& os, const Pos& pos);
   };

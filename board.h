@@ -78,6 +78,7 @@ public:
   array<int, N_BLOCKTYPE> block_n[2]; //block number left
   //log of play
   vector<Action> actions_taken;
+public:
   //init Positions
   void init();
   //take action player, block, Pos
@@ -88,6 +89,8 @@ public:
   Status status(); //which player to play, or winner
   //bool is_end();
   void calc_territory(int& , int&);
+  //player to go
+  Color player_to_go();
 
   bool inrange(const Pos& pos);
   bool occupied(const Pos& pos);
@@ -95,6 +98,7 @@ public:
 
   Board(){};
   //overload <<
+  void print_contact();
   friend ostream& operator<<(ostream& os, const Board& board);
 //client:
 //return valid action ids (client/player side function)
