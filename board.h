@@ -14,6 +14,7 @@
 #include<cassert>
 #include<string>
 #include<cstring>
+#include<utility>
 #include"var.h"
 //#include<Windows.h>
 //#include "block.h"
@@ -88,7 +89,7 @@ public:
   //return status of the
   Status status(); //which player to play, or winner
   //bool is_end();
-  void calc_territory(int& , int&);
+  pair<int, int> calc_territory();
   //player to go
   Color player_to_go();
 

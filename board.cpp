@@ -159,6 +159,31 @@ void Board::print_contact()
   return;
 }
 
+//calc_territory
+pair<int, int> Board::calc_territory()
+{
+  int augmented_board[BOARDN+2][BOARDN+2];
+  int cc_air[BOARDN][BOARDN];
+  int cc_stone[BOARDN][BOARDN];
+  bool vis[BOARDN][BOARDN];
+  int ncc_air = 0;
+  int ncc_stone = 0;
+  int side_touch = 0;
+  memset(vis, 0, sizeof(vis));
+  for(int i = 0; i < BOARDN; ++i)for(int j = 0; j < BOARDN; ++j)
+  {
+    Pos pos(i, j);
+    if(occupied(pos) && !vis[i][j])
+    {
+      int side_touch = 0;
+      dfs(pos, ncc_air++, side_touch);
+      if(side_touch >= 2) //this is alive?: X
+
+    }
+  }
+  return make_pair(a, b);
+}
+
 //test main
 /*
 signed main()
