@@ -4,6 +4,8 @@
 #include <array>
 #include <vector>
 
+//should define array<array<T, BOARDN>, BOARDN>
+
 //should not do calcaulation in rep
 #define rep(i, st, n) for (int i = (st); i < (n); ++i)
 #define debug(x) std::cout << #x << ": " << x << endl
@@ -14,6 +16,12 @@ using namespace std;
 typedef bool Color;
 
 namespace __board_namespace__{
+  enum Status {
+  	NOTEND = -1,
+  	BLACKWIN	= 0,
+    WHITEWIN = 1,
+    TIE = 2
+  };
 
   class Pos
   {

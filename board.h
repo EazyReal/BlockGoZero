@@ -66,18 +66,15 @@ public:
   friend ostream& operator<<(ostream& os, const Action& action);
 };
 
-enum Status {
-	NOTEND = -1,
-	BLACKWIN	= 0,
-  WHITEWIN = 1
-};
-
 class Board
 {
 public:
   //board related variants
   int b[BOARDN][BOARDN]; //board, 0 = black, 1 = white, -1 = o stone
   bool contact_points[2][BOARDN][BOARDN]; //notice that this doesnt exclude occupied stones
+  //air airbelongs
+  int airb[BOARDN][BOARDN];
+
   array<int, N_BLOCKTYPE> block_n[2]; //block number left
   //log of play
   vector<Action> actions_taken;
@@ -93,6 +90,7 @@ public:
   Status status(); //which player to play, or winner
   //player to go
   Color player_to_go();
+  inline int bp(Pos pos); //access b with pos
 
   //funcions for Pos/Action checking
   bool inrange(const Pos& pos);
@@ -105,10 +103,12 @@ public:
   template <typename T>
   inline void printBshapeArray(T arr[BOARDN][BOARDN], string arr_name);
   int contactEdges(Pos pos);
+  bool has_inner_domain(Pos pos);
   pair<int, int> calc_territory();
 
   //overload <<
   void print_contact();
+  void print_air();
   friend ostream& operator<<(ostream& os, const Board& board);
 //client:
 //return valid action ids (client/player side function)

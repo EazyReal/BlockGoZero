@@ -143,7 +143,9 @@ void EzWeiQiDomain::refreshDomain()
 }
 
 void EzWeiQiDomain::markDomain(DomainColor domainColor, CPoint pos)
-	//set bfs points satart at pos to domaincolor, bondary = unknownDomainSize piece + black peice(not dead)+ white piece(not dead)
+	//set bfs points satart at pos to with same origindomaincolor to domaincolor
+	//if origin point domain = unknownDomain boundary = all pieces
+	//else if mark color = white, boundary = white
 	int iXShift[4] = {1, -1, 0, 0};
 	int iYShift[4] = {0, 0, 1, -1};
 	list<CPoint> queue;									// Create a queue for BFS
@@ -157,7 +159,7 @@ void EzWeiQiDomain::markDomain(DomainColor domainColor, CPoint pos)
 		queue.pop_front();
 		for(int i=0; i<4; ++i){
 			if(isValid(currentPos.x+iXShift[i], currentPos.y+iYShift[i])){
-				if(getDomainType(currentPos.x+iXShift[i], currentPos.y+iYShift[i]) != originColor)		// if is originColor then replace with domainColor
+				if(getDomainType(currentPos.x+iXShift[i], currentPos.y+iYShift[i]) != originColor)
 					continue;
 				if(originColor == DOMAINCOLOR_UNKNOWN && m_pBoard->isPiece(currentPos.x+iXShift[i], currentPos.y+iYShift[i]))
 					continue;

@@ -29,6 +29,12 @@ signed main()
     }
     cout << b << endl;
   }
+  int bscore = b.calc_territory().first;
+  int wscore = b.calc_territory().second;
+  debug(bscore);
+  debug(wscore);
+  b.print_air();
+  /*
   b.print_contact();
 
   cout << "test contact points" << endl;
@@ -39,6 +45,7 @@ signed main()
     cout << "contact edges for cc Pos " << initial_contact_points[i].x << ' ' << initial_contact_points[i].y << endl;
     cout << b.contactEdges(initial_contact_points[i]) << endl;
   }
+  */
   return 0;
 }
 
