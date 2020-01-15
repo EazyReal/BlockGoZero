@@ -78,23 +78,24 @@ bool EzWeiQiDomain::isVisited(int x, int y)
 void EzWeiQiDomain::refreshDomain()
 {
 	/*
-	case 1:¤£¥i¸IÄ²Ãä¬É
-		¥ýmark¶Â:
-			¥u¬Ý¶Â¦â
-		¦Amark¥Õ:		
-			­Y¶Â¥]§t¥Õ:
-				«h¶Â¤£¾Ö¦³¸Ó»â¦a
-			­Y¥Õ¥]§t¶Â:
-				«h¥Õ¤£¾Ö¦³¸Ó»â¦a
+	case 1:ï¿½ï¿½ï¿½iï¿½IÄ²ï¿½ï¿½ï¿½ï¿½
+		ï¿½ï¿½markï¿½ï¿½:
+			ï¿½uï¿½Ý¶Â¦ï¿½
+		ï¿½Amarkï¿½ï¿½:
+			ï¿½Yï¿½Â¥]ï¿½tï¿½ï¿½:
+				ï¿½hï¿½Â¤ï¿½ï¿½Ö¦ï¿½ï¿½Ó»ï¿½ï¿½a
+			ï¿½Yï¿½Õ¥]ï¿½tï¿½ï¿½:
+				ï¿½hï¿½Õ¤ï¿½ï¿½Ö¦ï¿½ï¿½Ó»ï¿½ï¿½a
 
-	case 2:¥i¸IÄ²Ãä¬É
-		ºâ¸ÓdomainªºªÅ®æ¼Æ
-		­YªÅ®æ¼Æ==¥H¬YÃC¦â¬°Ãä¬É©Òºâ¥XªºªÅ®æ¼Æ
-			«h¸ÓdomainÄÝ©ó¸ÓÃC¦â
+	case 2:ï¿½iï¿½IÄ²ï¿½ï¿½ï¿½ï¿½
+		ï¿½ï¿½ï¿½ï¿½domainï¿½ï¿½ï¿½Å®ï¿½ï¿½ï¿½
+		ï¿½Yï¿½Å®ï¿½ï¿½ï¿½==ï¿½Hï¿½Yï¿½Cï¿½â¬°ï¿½ï¿½ï¿½É©Òºï¿½ï¿½Xï¿½ï¿½ï¿½Å®ï¿½ï¿½ï¿½
+			ï¿½hï¿½ï¿½domainï¿½Ý©ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
 	*/
-	
+
 	initialDomain();
 	//<! First mark color black
+	//mark inner of black chess(ignoring white pieces)
 	initialVisited();
 	for(int i=0; i<EZWEIQI_EDGE; ++i){
 		for(int j=0; j<EZWEIQI_EDGE; ++j){
@@ -102,24 +103,26 @@ void EzWeiQiDomain::refreshDomain()
 				markDomain(DOMAINCOLOR_BLACK, CPoint(i, j));
 		}
 	}
-	//<! Second mark color white and will check  having problem
+	//<! Second mark color white and will check having problem
 	initialVisited();
 	for(int i=0; i<EZWEIQI_EDGE; ++i){
 		for(int j=0; j<EZWEIQI_EDGE; ++j){
 			if(!isVisited(i, j) && !m_pBoard->isWhite(i, j) && isInnerDomain(PLAYERCOLOR_WHITE, CPoint(i, j))){
-				if(getDomainType(i,j) == DOMAINCOLOR_BLACK)
+				if(getDomainType(i,j) == DOMAINCOLOR_BLACK) //is both black inner and white inner
 					markDomain(DOMAINCOLOR_EMPTY, CPoint(i, j));
 				if(!hasDomainInside(DOMAINCOLOR_BLACK, CPoint(i, j)))
 					markDomain(DOMAINCOLOR_WHITE, CPoint(i, j));
 			}
 		}
 	}
-	//<! Third mark color 
+	//<! Third mark color
 	for(int i=0; i<EZWEIQI_EDGE; ++i){
 		for(int j=0; j<EZWEIQI_EDGE; ++j){
+			//if pos is not a piece and undecided
 			if(getDomainType(i, j) == DOMAINCOLOR_UNKNOWN && !m_pBoard->isPiece(i, j)){
-				int allEmptySize = getAllEmptySize();
+				int allEmptySize = getAllEmptySize(); //calc space that are not pieces
 				initialVisited();
+				//get domain size, boundary = all piece
 				int unknownDomainSize = domainSize(PLAYERCOLOR_PIECE, CPoint(i, j));
 				if(allEmptySize != unknownDomainSize){						// Someone has its own domain
 					initialVisited();
@@ -140,14 +143,14 @@ void EzWeiQiDomain::refreshDomain()
 }
 
 void EzWeiQiDomain::markDomain(DomainColor domainColor, CPoint pos)
-{
+	//set bfs points satart at pos to domaincolor, bondary = unknownDomainSize piece + black peice(not dead)+ white piece(not dead)
 	int iXShift[4] = {1, -1, 0, 0};
 	int iYShift[4] = {0, 0, 1, -1};
 	list<CPoint> queue;									// Create a queue for BFS
 	CPoint currentPos;									// A CPoint used to stroe current vertex during BFS
 	DomainColor originColor = getDomainType(pos);
 
-	setDomainType(pos, domainColor);					// Set Domain Type as domainColor	
+	setDomainType(pos, domainColor);					// Set Domain Type as domainColor
 	queue.push_back(pos);								// Enqueue the current vertex
 	while(!queue.empty()){
 		currentPos = queue.front();						// Dequeue a vertex from queue
@@ -158,7 +161,7 @@ void EzWeiQiDomain::markDomain(DomainColor domainColor, CPoint pos)
 					continue;
 				if(originColor == DOMAINCOLOR_UNKNOWN && m_pBoard->isPiece(currentPos.x+iXShift[i], currentPos.y+iYShift[i]))
 					continue;
-				if(domainColor == DOMAINCOLOR_BLACK && m_pBoard->isBlack(currentPos.x+iXShift[i], currentPos.y+iYShift[i]) || 
+				if(domainColor == DOMAINCOLOR_BLACK && m_pBoard->isBlack(currentPos.x+iXShift[i], currentPos.y+iYShift[i]) ||
 					domainColor == DOMAINCOLOR_WHITE && m_pBoard->isWhite(currentPos.x+iXShift[i], currentPos.y+iYShift[i]))
 					continue;
 
@@ -171,13 +174,14 @@ void EzWeiQiDomain::markDomain(DomainColor domainColor, CPoint pos)
 
 bool  EzWeiQiDomain::hasDomainInside(DomainColor domainColor, CPoint pos)
 {
+	//has "DOMAINCOLOR" around pos, boundary = board color == opposite of domainColor
 	int iXShift[4] = {1, -1, 0, 0};
 	int iYShift[4] = {0, 0, 1, -1};
 	bool iResult = false;
 	list<CPoint> queue;									// Create a queue for BFS
 	CPoint currentPos;									// A CPoint used to stroe current vertex during BFS
 
-	setVisited(pos);									// Mark the current vertex as visited			
+	setVisited(pos);									// Mark the current vertex as visited
 	queue.push_back(pos);								// Enqueue the current vertex
 	while(!queue.empty()){
 		currentPos = queue.front();						// Dequeue a vertex from queue
@@ -201,13 +205,14 @@ bool  EzWeiQiDomain::hasDomainInside(DomainColor domainColor, CPoint pos)
 
 int EzWeiQiDomain::domainSize(PlayerColor playerColor, CPoint pos)
 {
+	//calculate domain size with boundary = (board's)black/white/peice, start at position
 	int iXShift[4] = {1, -1, 0, 0};
 	int iYShift[4] = {0, 0, 1, -1};
 	int iDomainSize = 0;
 	list<CPoint> queue;									// Create a queue for BFS
 	CPoint currentPos;									// A CPoint used to stroe current vertex during BFS
-	
-	setVisited(pos);									// Mark the current vertex as visited			
+
+	setVisited(pos);									// Mark the current vertex as visited
 	queue.push_back(pos);								// Enqueue the current vertex
 	while(!queue.empty()){
 		currentPos = queue.front();						// Dequeue a vertex from queue
@@ -231,19 +236,20 @@ int EzWeiQiDomain::domainSize(PlayerColor playerColor, CPoint pos)
 }
 bool EzWeiQiDomain::isInnerDomain(PlayerColor playerColor, CPoint pos)
 {
+	//bfs, boundary = boardcolor is playerColor, if touch edge=>true, else return false
 	int iXShift[4] = {1, -1, 0, 0};
 	int iYShift[4] = {0, 0, 1, -1};
 	bool iResult = true;
 	list<CPoint> queue;									// Create a queue for BFS
 	CPoint currentPos;									// A CPoint used to stroe current vertex during BFS
 
-	setVisited(pos);									// Mark the current vertex as visited			
+	setVisited(pos);									// Mark the current vertex as visited
 	queue.push_back(pos);								// Enqueue the current vertex
 	while(!queue.empty()){
 		currentPos = queue.front();						// Dequeue a vertex from queue
 		queue.pop_front();
 		for(int i=0; i<4; ++i){
-			if(!isValid(currentPos.x+iXShift[i], currentPos.y+iYShift[i])){		// If touch the edge then return false 
+			if(!isValid(currentPos.x+iXShift[i], currentPos.y+iYShift[i])){		// If touch the edge then return false
 				iResult = false;
 				continue;
 			}

@@ -4,6 +4,7 @@
 
 signed main()
 {
+  cout << "test board validity" << endl;
   Board b;
   b.init();
   cout << b << endl;
@@ -29,7 +30,15 @@ signed main()
     cout << b << endl;
   }
   b.print_contact();
-  cout << "test validity" << endl;
+
+  cout << "test contact points" << endl;
+  rep(i, 0, 4)
+  {
+    //infinite loop
+    //debug(b.contactEdges(initial_contact_points[i]));
+    cout << "contact edges for cc Pos " << initial_contact_points[i].x << ' ' << initial_contact_points[i].y << endl;
+    cout << b.contactEdges(initial_contact_points[i]) << endl;
+  }
   return 0;
 }
 

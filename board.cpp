@@ -159,29 +159,109 @@ void Board::print_contact()
   return;
 }
 
+template <typename T>
+inline void Board::initBshapeArray(T arr[BOARDN][BOARDN], T val)
+{
+  rep(i, 0, BOARDN)rep(j, 0, BOARDN) arr[i][j] = val;
+}
+
+template <typename T>
+inline void Board::printBshapeArray(T arr[BOARDN][BOARDN], string arr_name)
+{
+  cout << "this is array: " << arr_name << endl;
+  for(int i = 0; i < BOARDN; ++i, cout << endl)rep(j, 0, BOARDN)
+  {
+    cout << arr[i][j] << ' ';
+  }
+}
+
+/*
+//no init visit inside
+template <typename T>
+void Board::BFScoloring(T arr[BOARDN][BOARDN], bool vis[BOARDN][BOARDN], Pos initpos, T val, T obs)
+{
+  queue<Pos> q;
+  q.push(initpos);
+  while(!q.empty)
+  {
+
+  }
+}
+*/
+
+//return contact edges count
+//my method bfs to find points contact with edge
+//return edge-counting point-set's cc count
+//notice that if u choose an empty site, initial color will be empty
+int Board::contactEdges(Pos initpos)
+{
+  bool vis[BOARDN][BOARDN]; // new vis, should be release after function call
+  bool mark[BOARDN][BOARDN]; //mark the contact points
+  initBshapeArray(vis, false); //can only use false for template
+  initBshapeArray(mark, false);
+  queue<Pos> q;
+  int initial_color = b[initpos.x][initpos.y];
+  q.push(initpos);
+  while(!q.empty())
+  {
+    Pos curPos = q.front(); q.pop();
+    rep(i, 0, 4)
+    {
+      Pos newPos = curPos + __board_namespace__::dxdy[i];
+      if(!inrange(newPos)) {mark[curPos.x][curPos.y] = 1; continue;} //mark contact point
+      //push if new position is same color
+      if(b[newPos.x][newPos.y] == initial_color && !vis[newPos.x][newPos.y])
+      {
+        q.push(newPos);
+        vis[newPos.x][newPos.y] = true;
+      }
+    }
+  }
+  //here then mark is the points in contact with edges
+  printBshapeArray(mark, GET_VAR_NAME(mark));
+  //q should be empty
+  auto isEdge = [](Pos pos)
+  {
+    return pos.x == BOARDN-1 || pos.y == BOARDN-1 || pos.x == 0 || pos.y == 0;
+  };
+  //color ccs return 1 if it is marked and not unmarked(new)
+  auto subroutine = [&](Pos pos) mutable //pass all by referece, mutable
+  {
+    if(!mark[pos.x][pos.y]) return 0;
+    //cc_cnt = cc_cnt + 1; cout << "hi debug" << endl;
+    q.push(pos);
+    while(!q.empty())
+    {
+      Pos curPos = q.front(); q.pop();
+      mark[curPos.x][curPos.y] = 0;//implicitly set vis = false
+      rep(i, 0, 4)
+      {
+        Pos newPos = curPos + __board_namespace__::dxdy[i];
+        if(!this->inrange(newPos)||!isEdge(newPos)) continue; //out of range / out of edge area
+        if(mark[newPos.x][newPos.y]) q.push(newPos);
+      }
+    }
+    return 1;
+  };
+  int cc_cnt = 0;
+  rep(i, 0, BOARDN)
+  {
+    cc_cnt += subroutine(Pos(0, i));
+    cc_cnt += subroutine(Pos(i, 0));
+    cc_cnt += subroutine(Pos(BOARDN-1, i));
+    cc_cnt += subroutine(Pos(i, BOARDN-1));
+  }
+  return cc_cnt;
+}
+
 //calc_territory
 pair<int, int> Board::calc_territory()
 {
-  int augmented_board[BOARDN+2][BOARDN+2];
-  int cc_air[BOARDN][BOARDN];
-  int cc_stone[BOARDN][BOARDN];
-  bool vis[BOARDN][BOARDN];
-  int ncc_air = 0;
-  int ncc_stone = 0;
-  int side_touch = 0;
-  memset(vis, 0, sizeof(vis));
-  for(int i = 0; i < BOARDN; ++i)for(int j = 0; j < BOARDN; ++j)
-  {
-    Pos pos(i, j);
-    if(occupied(pos) && !vis[i][j])
-    {
-      int side_touch = 0;
-      dfs(pos, ncc_air++, side_touch);
-      if(side_touch >= 2) //this is alive?: X
+  int bscore = 0;
+  int wscore = 0;
+  //initBshapeArray(vis, false);
 
-    }
-  }
-  return make_pair(a, b);
+  return make_pair(bscore, wscore);
 }
 
 //test main
