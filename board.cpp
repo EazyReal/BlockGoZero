@@ -441,8 +441,8 @@ void Board::print_air()
   rep(j, 0, BOARDN)
   {
   if(b[i][j] != -1) cout << "ox"[b[i][j]] << ' ';
-  else if(airb[i][j] == 1) cout << "- ";
-  else if(airb[i][j] == 2) cout << "| ";
+  else if(airb[i][j] == 1) cout << FRED("- ");
+  else if(airb[i][j] == 2) cout << FBLU("| ");
   else cout << ". ";
   }
 }

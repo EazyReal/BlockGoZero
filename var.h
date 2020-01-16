@@ -9,7 +9,7 @@
 //should not do calcaulation in rep
 #define rep(i, st, n) for (int i = (st); i < (n); ++i)
 #define debug(x) std::cout << #x << ": " << x << endl
-#define GET_VAR_NAME(x)(#x)
+#define GET_VAR_NAME(x) (#x)
 
 using namespace std;
 

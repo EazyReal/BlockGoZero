@@ -18,6 +18,7 @@
 #include<queue>
 
 #include"var.h"
+#include"color.h"
 //#include<Windows.h>
 //#include "block.h"
 
