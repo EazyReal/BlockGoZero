@@ -28,6 +28,7 @@ signed main()
       cout << a;
     }
     cout << b << endl;
+    //cout << b.valid_actions_mask(b.player_to_go());
   }
   int bscore = b.calc_territory().first;
   int wscore = b.calc_territory().second;

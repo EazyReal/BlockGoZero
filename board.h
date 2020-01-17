@@ -64,6 +64,8 @@ public:
     origin = Pos(*(a.begin()+2), *(a.begin()+3));
     origin_id = *(a.begin()+4);
   }
+  int toidx();
+  
   friend ostream& operator<<(ostream& os, const Action& action);
 };
 
@@ -87,6 +89,7 @@ public:
   Status take_action(Action action);
   //valid action given current board
   vector<Action> valid_actions(Color player);
+  bitset<N_ACTION> valid_actions_mask(Color player);
   //return status of the
   Status status(); //which player to play, or winner
   //player to go

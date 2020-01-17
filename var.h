@@ -70,6 +70,12 @@ namespace __board_namespace__{
   {{
     {0,1}, {1,0}, {0,-1}, {-1,0}
   }};
+  //dxdy8
+  static const array<Pos, 8> dxdy8 =
+  {{
+    {0,1}, {1,0}, {0,-1}, {-1,0},
+    {1,1}, {1,-1}, {-1,-1}, {-1,1}
+  }};
   static const array<Pos, 4> initial_contact_points =
   {{
     {3,3}, {3,9}, {9,3}, {9,9}

@@ -149,6 +149,23 @@ vector<Action> Board::valid_actions(Color player)
   return ret;
 }
 
+int Action::toidx()
+{
+  return (this->origin.x*BOARDN+this->origin.y)*N_ISO+this->iso_id;
+}
+
+bitset<N_ACTION> Board::valid_actions_mask(Color player)
+{
+  bitset<N_ACTION> ret; //0bitmask
+  vector<Action> actions = valid_actions(player);
+  for(Action act : actions)
+  {
+    assert(act.origin_id == 0);
+    ret.set(act.toidx());//
+  }
+  return ret;
+}
+
 
 Color Board::player_to_go()
 {
@@ -293,7 +310,7 @@ bool Board::has_inner_domain(Pos pos)
   while(!q.empty())
   {
     Pos curPos = q.front(); q.pop();
-    for(auto di : __board_namespace__::dxdy)
+    for(auto di : __board_namespace__::dxdy8) //bug fixed, should use dxdy8
     {
       Pos newPos = curPos+di;
       if(!inrange(newPos) || bp(newPos) != origincolor) continue;
@@ -442,7 +459,7 @@ void Board::print_air()
   {
   if(b[i][j] != -1) cout << "ox"[b[i][j]] << ' ';
   else if(airb[i][j] == 1) cout << FRED("- ");
-  else if(airb[i][j] == 2) cout << FBLU("| ");
+  else if(airb[i][j] == 2) cout << FGRN("| ");
   else cout << ". ";
   }
 }
