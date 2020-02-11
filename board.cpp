@@ -54,23 +54,26 @@ void Board::init()
   for(int i = 0; i < BOARDVL; ++i) allpos[i] = Pos(i/BOARDN, i%BOARDN);
 }
 
+//check if Pos pos is in range of board
 inline bool Board::inrange(const Pos& pos)
 {
   return pos.x>=0 && pos.x<BOARDN && pos.y>=0 && pos.y<BOARDN;
 }
 
-//should use after check inrange
+//check if Pos pos isoccupied, should use after check inrange
 inline bool Board::occupied(const Pos& pos)
 {
   //if(inrange(pos)) return true;
   return b[pos.x][pos.y] != -1;
 }
 
+//Board Pos access
 inline int Board::bp(Pos pos)
 {
   return b[pos.x][pos.y];
 }
 
+//check block in range and has a at least one contact point
 bool Board::is_valid(const Action& action)
 {
   if(block_n[action.player][iso2type[action.iso_id]] == 0) return false;
@@ -84,6 +87,7 @@ bool Board::is_valid(const Action& action)
   return contact;
 }
 
+//return Board Status
 Status Board::status()
 {
   if(actions_taken.size() != 18) return NOTEND;
@@ -99,6 +103,7 @@ Status Board::status()
   }
 }
 
+//take Acction , return status, update contact points
 Status Board::take_action(Action action)
 {
   assert(is_valid(action));
@@ -125,6 +130,7 @@ Status Board::take_action(Action action)
   return this->status();
 }
 
+//return vector of valid actions
 vector<Action> Board::valid_actions(Color player)
 {
   vector<Action> ret;
@@ -149,6 +155,7 @@ vector<Action> Board::valid_actions(Color player)
   return ret;
 }
 
+//Action to index conversion
 int Action::toidx()
 {
   return (this->origin.x*BOARDN+this->origin.y)*N_ISO+this->iso_id;
